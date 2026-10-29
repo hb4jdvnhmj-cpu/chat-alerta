@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ojo al chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+[hidden]{display:none!important}
+:root{color-scheme:light}
+/* Layout concept: a phone-shaped card centered on the page. The chat screen keeps the alert button in the thumb zone; feedback arrives as bottom sheets that pause the chat. */
+:root{
+  --font-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --page:#DDE7E3;
+  --surface:#FFFFFF;
+  --surface-2:#F0F5F3;
+  --ink:#13221E;
+  --ink-2:#51655F;
+  --line:#D5E0DB;
+  --header:#0E5C50;
+  --header-ink:#F1FBF8;
+  --avatar:#3E9482;
+  --wall:#E7EFEB;
+  --wall-dot:#D3E0DA;
+  --in:#FFFFFF;
+  --out:#CDEBD6;
+  --sys:#F6F9F8;
+  --btn:#0E5C50;
+  --btn-ink:#FFFFFF;
+  --flag:#D6402A;
+  --flag-deep:#A52E1B;
+  --flag-on:#FFFFFF;
+  --flag-soft:#FBE4DF;
+  --flag-text:#9A2A18;
+  --ok:#1E8E5A;
+  --ok-soft:#DCF2E5;
+  --ok-text:#0F6B41;
+  --amber:#C27A12;
+  --amber-soft:#FBEBCF;
+  --amber-text:#7A4506;
+  --scrim:rgba(10,24,20,.55);
+  --shadow:0 18px 50px rgba(14,40,34,.18);
+  --focus:#1B6FD9;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0A1210;
+    --surface:#14201D;
+    --surface-2:#1B2A26;
+    --ink:#E5F0EC;
+    --ink-2:#9BB1AA;
+    --line:#263733;
+    --header:#0F2A26;
+    --header-ink:#E5F0EC;
+    --avatar:#2C7767;
+    --wall:#0E1916;
+    --wall-dot:#16241F;
+    --in:#1D2C28;
+    --out:#16483C;
+    --sys:#1A2824;
+    --btn:#34AE96;
+    --btn-ink:#04211B;
+    --flag:#FF6E58;
+    --flag-deep:#C44631;
+    --flag-on:#2B0B05;
+    --flag-soft:#3A1D18;
+    --flag-text:#FF9C8C;
+    --ok:#4CC38A;
+    --ok-soft:#14362A;
+    --ok-text:#7FDCB0;
+    --amber:#E8A94A;
+    --amber-soft:#382B12;
+    --amber-text:#F0C77F;
+    --scrim:rgba(0,0,0,.6);
+    --shadow:0 18px 50px rgba(0,0,0,.5);
+    --focus:#7DB4FF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0A1210;
+  --surface:#14201D;
+  --surface-2:#1B2A26;
+  --ink:#E5F0EC;
+  --ink-2:#9BB1AA;
+  --line:#263733;
+  --header:#0F2A26;
+  --header-ink:#E5F0EC;
+  --avatar:#2C7767;
+  --wall:#0E1916;
+  --wall-dot:#16241F;
+  --in:#1D2C28;
+  --out:#16483C;
+  --sys:#1A2824;
+  --btn:#34AE96;
+  --btn-ink:#04211B;
+  --flag:#FF6E58;
+  --flag-deep:#C44631;
+  --flag-on:#2B0B05;
+  --flag-soft:#3A1D18;
+  --flag-text:#FF9C8C;
+  --ok:#4CC38A;
+  --ok-soft:#14362A;
+  --ok-text:#7FDCB0;
+  --amber:#E8A94A;
+  --amber-soft:#382B12;
+  --amber-text:#F0C77F;
+  --scrim:rgba(0,0,0,.6);
+  --shadow:0 18px 50px rgba(0,0,0,.5);
+  --focus:#7DB4FF;
+  color-scheme:dark;
+}
+
+html,body{height:100%}
+html{box-sizing:border-box}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  padding-block:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--page);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.45;
+  display:flex;
+  justify-content:center;
+}
+button,select{font-family:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.app{
+  position:relative;
+  width:100%;
+  max-width:440px;
+  max-height:900px;
+  height:100%;
+  align-self:center;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:26px 22px 24px;display:flex;flex-direction:column;gap:18px}
+
+/* intro */
+.eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.title{
+  margin:0;
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(40px,12vw,54px);
+  line-height:1;
+  letter-spacing:-.025em;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:0 .28em;
+}
+.bub{
+  position:relative;
+  background:var(--out);
+  color:var(--ink);
+  padding:.08em .3em .14em;
+  border-radius:.38em .38em .1em .38em;
+}
+.lead{margin:0;font-size:16px;color:var(--ink);max-width:46ch}
+.how{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:step}
+.how li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;counter-increment:step}
+.how li::before{
+  content:counter(step);
+  width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--surface-2);color:var(--ink);
+  font:700 14px var(--font-display);
+  border:1.5px solid var(--line);
+}
+.how span{padding-top:3px}
+fieldset{margin:0;padding:0;border:0;min-width:0}
+legend{padding:0;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{
+  display:flex;align-items:center;justify-content:center;
+  height:46px;border-radius:12px;
+  border:1.5px solid var(--line);background:var(--surface);
+  font-weight:600;cursor:pointer;
+}
+.seg input:checked + label{background:var(--surface-2);border-color:var(--btn);box-shadow:inset 0 0 0 1px var(--btn)}
+.seg input:focus-visible + label{outline:3px solid var(--focus);outline-offset:2px}
+.sel{
+  width:100%;height:46px;padding:0 12px;
+  border-radius:12px;border:1.5px solid var(--line);
+  background:var(--surface);color:var(--ink);
+  font:600 15px var(--font-body);
+}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;height:52px;border:0;border-radius:14px;
+  background:var(--btn);color:var(--btn-ink);
+  font:700 17px var(--font-display);
+  cursor:pointer;
+}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.fine{margin:0;font-size:13px;color:var(--ink-2)}
+
+/* game header + stats */
+.hdr{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;background:var(--header);color:var(--header-ink)}
+.avatar{
+  width:40px;height:40px;border-radius:50%;flex:none;
+  display:grid;place-items:center;
+  background:var(--avatar);color:#fff;
+  font:800 18px var(--font-display);
+}
+.who{flex:1;min-width:0}
+.who b{display:block;font:700 16px var(--font-display);line-height:1.15}
+.who small{display:block;font-size:12px;opacity:.82}
+.iconbtn{
+  width:42px;height:42px;border:0;border-radius:50%;
+  background:transparent;color:inherit;cursor:pointer;
+  display:grid;place-items:center;
+}
+.iconbtn:hover{background:rgba(255,255,255,.12)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border-bottom:1px solid var(--line)}
+.stat{padding:7px 4px 6px;text-align:center}
+.stat b{display:block;font:800 20px var(--font-display);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.stat.s-ok b{color:var(--ok-text)}
+.stat.s-warn b{color:var(--amber-text)}
+.stat.s-miss b{color:var(--flag-text)}
+.stat.bump b{animation:bump .4s ease-out}
+
+/* chat */
+.chat{
+  flex:1;min-height:0;overflow-y:auto;
+  padding:14px 12px 16px;
+  display:flex;flex-direction:column;gap:6px;
+  background-color:var(--wall);
+  background-image:radial-gradient(var(--wall-dot) 1.2px,transparent 1.4px);
+  background-size:22px 22px;
+}
+.day,.sys{
+  align-self:center;
+  background:var(--sys);color:var(--ink-2);
+  font-size:12px;font-weight:600;
+  padding:4px 11px;border-radius:10px;
+  text-align:center;
+}
+.day{margin-bottom:4px}
+.msg{display:flex;min-width:0}
+.msg.in{justify-content:flex-start}
+.msg.out{justify-content:flex-end}
+.msg.flagged,.msg.calm{margin-top:10px}
+.bubble{
+  position:relative;
+  max-width:84%;
+  display:flex;flex-direction:column;
+  padding:7px 10px 5px;
+  border-radius:14px;
+  font-size:15px;line-height:1.35;
+  box-shadow:0 1px 0 rgba(0,0,0,.08);
+  animation:pop .18s ease-out;
+}
+.msg.in .bubble{background:var(--in);border-top-left-radius:4px}
+.msg.out .bubble{background:var(--out);border-top-right-radius:4px}
+.txt{overflow-wrap:anywhere}
+.meta{align-self:flex-end;display:flex;align-items:center;gap:3px;margin-top:2px;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.meta svg{width:15px;height:15px}
+.msg.flagged .bubble{outline:2.5px solid var(--flag);outline-offset:1px}
+.msg.calm .bubble{outline:2px dashed var(--amber);outline-offset:1px}
+.tag{
+  position:absolute;top:-11px;right:8px;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px 2px 6px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+}
+.tag svg{width:12px;height:12px}
+.msg.flagged .tag{background:var(--flag);color:var(--flag-on)}
+.msg.calm .tag{background:var(--amber);color:var(--surface)}
+.bubble.typing{flex-direction:row;gap:4px;padding:12px 14px;animation:none}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--ink-2);opacity:.45;animation:dot 1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+
+/* dock */
+.dock{padding:10px 14px 12px;background:var(--surface);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.alert{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;height:58px;border:0;border-radius:16px;
+  background:var(--flag);color:var(--flag-on);
+  font:800 18px var(--font-display);letter-spacing:.01em;
+  box-shadow:0 4px 0 var(--flag-deep);
+  cursor:pointer;
+  transition:transform .08s,box-shadow .08s;
+}
+.alert:active{transform:translateY(3px);box-shadow:0 1px 0 var(--flag-deep)}
+.alert svg{width:24px;height:24px}
+.hint{margin:0;text-align:center;font-size:12px;color:var(--ink-2)}
+
+/* sheet */
+.scrim{position:absolute;inset:0;z-index:20;background:var(--scrim);display:flex;align-items:flex-end}
+.sheet{
+  width:100%;max-height:88%;overflow-y:auto;
+  background:var(--surface);
+  border-radius:22px 22px 0 0;
+  padding:18px 18px 18px;
+  display:flex;flex-direction:column;gap:12px;
+  animation:rise .22s ease-out;
+}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:999px;
+  font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--surface-2);color:var(--ink-2);
+}
+.chip.ok{background:var(--ok-soft);color:var(--ok-text)}
+.chip.warn{background:var(--amber-soft);color:var(--amber-text)}
+.chip.stage{background:var(--surface-2);color:var(--ink-2)}
+.sheet h2{margin:0;font:800 24px/1.1 var(--font-display);letter-spacing:-.01em;text-wrap:balance}
+.qwrap{background:var(--wall);border-radius:14px;padding:10px 10px 12px}
+.qwrap .bubble{max-width:100%;animation:none;background:var(--in);border-top-left-radius:4px}
+.sheet p{margin:0}
+.tip{background:var(--surface-2);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.tip b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.sheet .row{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+
+/* decision */
+.dtitle{margin:0;font:800 28px/1.08 var(--font-display);letter-spacing:-.015em;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{
+  display:grid;grid-template-columns:1fr;gap:6px;
+  width:100%;text-align:left;
+  padding:14px;border:1.5px solid var(--line);border-radius:16px;
+  background:var(--surface);color:var(--ink);
+  font:600 15px/1.35 var(--font-body);cursor:pointer;
+}
+.opt:hover:not(:disabled){border-color:var(--btn)}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:var(--ok-soft)}
+.opt.bad{border-color:var(--flag);background:var(--flag-soft)}
+.opt.dim{opacity:.55}
+
+/* results */
+.hero{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.big{font:800 64px/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.herolabel{font-size:15px;color:var(--ink-2);font-weight:600}
+.rate{margin:0;font:800 22px/1.15 var(--font-display)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:6px 12px;border-radius:999px;background:var(--surface-2);font-size:13px;font-weight:600}
+.pill b{font-variant-numeric:tabular-nums}
+h3{margin:0;font:800 19px/1.2 var(--font-display)}
+.stage{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.stage:first-of-type{border-top:0}
+.stagehead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.stagehead b{font:700 16px var(--font-display)}
+.stagehead span{font-size:13px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.stage p{margin:0;font-size:14px;color:var(--ink-2)}
+.sigs{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.sig{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:999px;font-size:13px;font-weight:600}
+.sig svg{width:14px;height:14px;flex:none}
+.sig.got{background:var(--ok-soft);color:var(--ok-text)}
+.sig.miss{border:1.5px dashed var(--flag);color:var(--flag-text);padding:2px 9px 2px 7px}
+.card{background:var(--surface-2);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.card p{margin:0}
+.card b.k{font:700 16px var(--font-display)}
+.help{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.help li{display:grid;grid-template-columns:18px 1fr;gap:8px}
+.help li svg{width:18px;height:18px;margin-top:2px;color:var(--ok-text)}
+.lines{display:flex;flex-direction:column;gap:10px}
+.ln{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:center}
+.ln b{font:800 30px/1 var(--font-display);letter-spacing:-.01em;user-select:all}
+.ln span{font-size:14px}
+
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes dot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.35)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- Inicio -->
+  <section class="screen" id="introScreen" aria-label="Inicio">
+    <div class="scroll">
+      <p class="eyebrow">Juego de prevención del grooming</p>
+      <h1 class="title">Ojo al <span class="bub">chat</span></h1>
+      <p class="lead">Vas a mirar el celu de un chico o una chica mientras conversa con alguien que conoció hace poco por internet. Hay cuatro historias distintas. Tu misión es tocar el botón de alerta cada vez que aparezca una señal de que algo no está bien.</p>
+      <ol class="how">
+        <li><span>Leé los mensajes a medida que llegan.</span></li>
+        <li><span>Tocá <b>Señal de alerta</b> apenas notes algo raro.</span></li>
+        <li><span>Cada alerta te explica qué viste. Si fue una falsa alarma, también te lo contamos.</span></li>
+      </ol>
+      <fieldset>
+        <legend><label for="story">Historia</label></legend>
+        <select class="sel" id="story"></select>
+      </fieldset>
+      <fieldset>
+        <legend>Ritmo del chat</legend>
+        <div class="seg">
+          <input type="radio" name="speed" id="spdSlow" value="1.4" checked>
+          <label for="spdSlow">Tranquilo</label>
+          <input type="radio" name="speed" id="spdNormal" value="1">
+          <label for="spdNormal">Normal</label>
+        </div>
+      </fieldset>
+      <button class="btn" id="startBtn" type="button">Empezar</button>
+      <p class="fine" id="bestLine" hidden></p>
+      <p class="fine">Es un juego educativo con personajes y mensajes ficticios, sin imágenes ni lenguaje explícito. Si algo de esto te trae recuerdos o te preocupa, hablalo con un adulto de confianza o llamá al 102.</p>
+    </div>
+  </section>
+
+  <!-- Chat -->
+  <section class="screen" id="gameScreen" aria-label="Chat" hidden>
+    <header class="hdr">
+      <div class="avatar" id="avatarLetter" aria-hidden="true">N</div>
+      <div class="who">
+        <b id="otherName">Nico</b>
+        <small id="status">en línea</small>
+      </div>
+      <button class="iconbtn" id="pauseBtn" type="button" aria-label="Pausar">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>
+      </button>
+    </header>
+    <div class="stats" aria-live="polite">
+      <div class="stat s-ok" id="stHits"><b>0</b><span>Detectadas</span></div>
+      <div class="stat s-warn" id="stFalse"><b>0</b><span>Falsas alarmas</span></div>
+      <div class="stat s-miss" id="stMiss"><b>0</b><span>Se pasaron</span></div>
+    </div>
+    <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Mensajes"></div>
+    <div class="dock">
+      <button class="alert" id="alertBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M5 4.5c3-1.6 5 1.6 8.5 0 1.6-.7 3-.5 5.5.3v8.2c-2.5-.8-3.9-1-5.5-.3-3.5 1.6-5.5-1.6-8.5 0z" fill="currentColor"/></svg>
+        Señal de alerta
+      </button>
+      <p class="hint">Tocá cuando veas algo raro. También podés usar la barra espaciadora.</p>
+    </div>
+  </section>
+
+  <!-- Decisión -->
+  <section class="screen" id="decideScreen" aria-label="Qué hacer" hidden>
+    <div class="scroll">
+      <p class="eyebrow" id="decideEyebrow">Dejó de contestar</p>
+      <h2 class="dtitle" id="decideTitle">¿Qué le aconsejarías?</h2>
+      <div class="opts" id="opts"></div>
+      <div class="card" id="verdict" hidden>
+        <b class="k" id="verdictTitle"></b>
+        <p id="verdictText"></p>
+      </div>
+      <button class="btn" id="resultBtn" type="button" hidden>Ver mi resultado</button>
+    </div>
+  </section>
+
+  <!-- Resultado -->
+  <section class="screen" id="resultScreen" aria-label="Resultado" hidden>
+    <div class="scroll" id="resultScroll">
+      <p class="eyebrow" id="resEyebrow">Tu resultado</p>
+      <div class="hero">
+        <span class="big" id="resNum">0/9</span>
+        <span class="herolabel">señales detectadas</span>
+      </div>
+      <p class="rate" id="resRate"></p>
+      <div class="pills">
+        <span class="pill">Falsas alarmas: <b id="resFalse">0</b></span>
+        <span class="pill">Se pasaron: <b id="resMiss">0</b></span>
+        <span class="pill">Puntos: <b id="resPts">0</b></span>
+      </div>
+
+      <h3>Cómo se fue armando la trampa</h3>
+      <div id="stages"></div>
+
+      <div class="card">
+        <b class="k" id="revealTitle"></b>
+        <p id="revealText"></p>
+      </div>
+
+      <h3>Si te pasa a vos o a alguien que conocés</h3>
+      <ul class="help">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span><b>No es tu culpa.</b> La responsabilidad es siempre de quien presiona.</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Contáselo a un adulto de confianza, aunque te dé vergüenza o miedo.</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Guardá capturas de pantalla y no borres nada: sirven para denunciar.</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Bloqueá y denunciá el perfil en la app.</span></li>
+      </ul>
+      <div class="lines" aria-label="Teléfonos de ayuda en Argentina">
+        <div class="ln"><b>102</b><span>Línea de niñez y adolescencia. Gratuita.</span></div>
+        <div class="ln"><b>137</b><span>Atención a víctimas de violencia familiar y sexual. Gratuita.</span></div>
+        <div class="ln"><b>911</b><span>Emergencias.</span></div>
+      </div>
+
+      <button class="btn" id="againBtn" type="button">Jugar otra historia</button>
+      <button class="btn ghost" id="homeBtn" type="button">Volver al inicio</button>
+      <p class="fine">Contenido educativo. Los personajes y mensajes son ficticios.</p>
+    </div>
+  </section>
+
+  <!-- Hoja de feedback -->
+  <div class="scrim" id="scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="chips">
+        <span class="chip" id="sheetChip"></span>
+        <span class="chip stage" id="sheetStage" hidden></span>
+      </div>
+      <h2 id="sheetTitle"></h2>
+      <div class="qwrap" id="sheetQuote" hidden>
+        <div class="bubble"><span class="txt" id="sheetQuoteText"></span></div>
+      </div>
+      <p id="sheetBody"></p>
+      <div class="tip" id="sheetTip" hidden>
+        <b>Qué podés hacer</b>
+        <span id="sheetTipText"></span>
+      </div>
+      <div class="row">
+        <button class="btn" id="sheetBtn" type="button">Seguir</button>
+        <button class="btn ghost" id="sheetGhost" type="button" hidden></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- Etapas y señales (se reutilizan en todas las historias) ---------- */
+var STAGES = [
+  { name: 'Confianza falsa', blurb: 'Halagos, “somos parecidos” y ofrecerse como único apoyo para que sientas que esa persona es especial.' },
+  { name: 'Aislamiento', blurb: 'Te alejan de tu gente, piden datos y buscan un lugar con menos ojos.' },
+  { name: 'Secreto', blurb: 'Te piden callar y te hacen sentir en deuda o ante una oportunidad única.' },
+  { name: 'Chantaje emocional', blurb: 'Presión, culpa y miedo para que no pidas ayuda.' }
+];
+
+var SIG = {
+  halago: {
+    stage: 0, title: 'Halagos exagerados',
+    why: 'Un elogio está bien. Cuando es enorme, llega muy rápido y viene de alguien que casi no te conoce, te hace sentir especial y te baja las defensas.',
+    tip: 'Preguntate: ¿esta persona me conoce lo suficiente como para decirme eso?'
+  },
+  igual: {
+    stage: 0, title: 'Somos iguales',
+    why: 'Decir “yo soy como vos” y “solo yo te entiendo” arma una conexión que parece profunda en pocas horas. La confianza de verdad lleva tiempo.',
+    tip: 'Ir despacio es sano. Si alguien apura la intimidad, frená.'
+  },
+  ayuda: {
+    stage: 0, title: 'Único apoyo',
+    why: 'Decir “siempre voy a estar para vos, mejor que cualquiera” busca que dependas de una sola persona. El cariño de verdad no compite con tu familia ni con tus amigos.',
+    tip: 'Los buenos vínculos suman gente a tu vida. No te dejan con una sola persona.'
+  },
+  entorno: {
+    stage: 1, title: 'Te aparta de tu gente',
+    why: 'Hablar mal de tus amigos o de tu familia te va alejando de quienes te cuidan. Quedarte con una sola persona hace todo más difícil.',
+    tip: 'Quien te quiere bien no te separa de tu gente.'
+  },
+  supervision: {
+    stage: 1, title: 'Pregunta quién te cuida',
+    why: 'Averiguar si hay adultos cerca o quién mira tu celu no es curiosidad inocente cuando viene de alguien que acabás de conocer.',
+    tip: 'No des datos sobre tu casa, tus horarios ni quién está con vos.'
+  },
+  datos: {
+    stage: 1, title: 'Pide datos personales',
+    why: 'La escuela, el barrio y los horarios no se comparten con alguien que no conocés en persona. Con esos datos se puede saber dónde encontrarte.',
+    tip: 'Podés decir “prefiero no decirlo”. Si se enoja o insiste, es una señal más.'
+  },
+  privada: {
+    stage: 1, title: 'Pasar a un lugar privado',
+    why: 'Mover la charla a otra app, con menos control y sin otras personas cerca, es una señal frecuente.',
+    tip: 'Quedate en la app donde estás y avisale a un adulto.'
+  },
+  secreto: {
+    stage: 2, title: 'Pacto de secreto',
+    why: 'Pedir que algo quede en secreto es una de las señales más importantes. Quien tiene buenas intenciones no necesita que escondas la charla de los adultos que te cuidan.',
+    tip: 'Un secreto que te incomoda no hay que guardarlo. Contarlo no es traicionar a nadie.'
+  },
+  regalo: {
+    stage: 2, title: 'Regalos que generan deuda',
+    why: 'Un regalo de alguien que recién conocés puede hacerte sentir que le debés algo. Después ese “favor” se usa para pedirte cosas.',
+    tip: 'Podés agradecer y aun así no deberle nada.'
+  },
+  promesa: {
+    stage: 2, title: 'Promesas demasiado buenas',
+    why: 'Ofrecer fama o ayuda especial a alguien que recién conocés te hace sentir que perdés una oportunidad si decís que no. Las oportunidades de verdad no piden secreto.',
+    tip: 'Contale la propuesta a un adulto antes de aceptar. Si es real, no hay problema en mostrarla.'
+  },
+  foto: {
+    stage: 3, title: 'Pide algo tuyo en privado',
+    why: 'Pedir fotos privadas a alguien que conocés hace poco cruza un límite. Una vez enviada, ya no controlás dónde termina.',
+    tip: 'Podés decir que no, sin dar explicaciones. Si insiste, es momento de avisar a un adulto.'
+  },
+  culpa: {
+    stage: 3, title: 'Culpa y miedo',
+    why: 'Acá se da vuelta la culpa: te hacen responsable de sus emociones y te asustan para que no pidas ayuda. La culpa no es tuya.',
+    tip: 'Pedir ayuda no te mete en problemas: te protege. Guardá capturas, bloqueá y contale a un adulto de confianza.'
+  }
+};
+
+/* ---------- Historias ----------
+   f: in = escribe la otra persona, out = escribe quien mira el celu (la víctima).
+   r: señal (clave de SIG). n: nota si el mensaje es normal.
+   t puede ser un texto o una lista de variantes: se elige una al azar en cada partida. */
+var STORIES = [
+  {
+    id: 'dibujo', title: 'El grupo de dibujo',
+    who: 'Mili', age: 14, other: 'Nico', initial: 'N',
+    ctx: 'se conocieron en un grupo de dibujo',
+    revealTitle: 'Nico dijo tener 16 años. Era un adulto.',
+    revealText: 'En internet cualquiera puede inventarse un perfil. Que alguien te caiga bien, te elogie o comparta tus gustos no alcanza para saber quién es. Una sola señal puede ser inocente; varias juntas, no.',
+    script: [
+      { f:'in',  t:['Hola Mili! Soy Nico. Vi tus dibujos en el grupo de arte, están muy buenos.', 'Hola! Vi tus dibujos en el grupo de arte y me gustaron mucho. Soy Nico.'], n:'Presentarse y comentar algo que comparten es normal. Lo importante es cómo sigue la charla.' },
+      { f:'out', t:'Hola! Gracias jaja, recién empiezo' },
+      { f:'in',  t:['¿Qué música escuchás mientras dibujás?', '¿Y qué escuchás mientras dibujás? Yo no puedo sin música'], n:'Preguntar por gustos es normal. Compartir intereses no es una señal por sí solo.' },
+      { f:'out', t:'indie y lo-fi casi siempre' },
+      { f:'in',  t:'No puede ser, yo también! Pasame tu playlist cuando quieras.', n:'Coincidir en gustos pasa todo el tiempo. Fijate si después aparece algo más.' },
+      { f:'out', t:'dale, después te la paso' },
+      { f:'in',  t:'Para mí tenés un talento increíble, mucho mejor que gente que lleva años dibujando.', r:'halago' },
+      { f:'out', t:'jaja no creo, en el cole nadie le da bola a lo que dibujo' },
+      { f:'in',  t:'Te entiendo muchísimo. A mí tampoco me entendía nadie a tu edad. Vos y yo somos parecidos.', r:'igual' },
+      { f:'out', t:'en serio?' },
+      { f:'in',  t:'Posta. Bueno, me voy a estudiar, mañana tengo prueba de mate jaja', n:'Una charla normal sobre el cole. Nada raro acá.' },
+      { f:'out', t:'suerte!! yo tengo bio. mis amigas ni estudian jaja' },
+      { f:'in',  t:'Tus amigas no saben valorarte como yo. Con vos sí se puede hablar en serio.', r:'entorno' },
+      { f:'out', t:'jaja puede ser' },
+      { f:'in',  t:'¿Y tus papás? ¿Te dejan usar el celu tranquila? ¿Hay alguien en tu casa ahora?', r:'supervision' },
+      { f:'out', t:'mi mamá labura hasta tarde, casi siempre estoy sola a la noche' },
+      { f:'in',  t:'Mejor entonces. Che, este chat es medio lento. Pasemos a otra app más privada, así nadie nos molesta.', r:'privada' },
+      { f:'out', t:'bueno, ya la instalo' },
+      { f:'in',  t:'Y no le cuentes a nadie que hablamos, la gente se hace ideas raras. Esto queda entre nosotros, ¿sí?', r:'secreto' },
+      { f:'out', t:'ok.. no le cuento a nadie' },
+      { f:'in',  t:'Te mandé una recarga para tu juego, es un regalito. Ahora me debés una charla larga jaja', r:'regalo' },
+      { f:'out', t:'no hacía falta!! gracias' },
+      { f:'in',  t:'¿Y el dibujo del dragón? ¿Lo terminaste?', n:'Preguntar por tus cosas es normal. Mirá el conjunto, no cada mensaje suelto.' },
+      { f:'out', t:'casi, me falta pintarlo' },
+      { f:'in',  t:'Mandame una foto tuya, de esas que no subís a ningún lado. Quiero tener algo tuyo.', r:'foto' },
+      { f:'out', t:'no sé... me da cosa' },
+      { f:'in',  t:'Si no me la mandás me voy a sentir muy mal. Y si le contás a alguien, se van a enojar con vos por haberme hablado.', r:'culpa' },
+      { f:'out', t:'no te enojes, lo pienso' }
+    ]
+  },
+  {
+    id: 'juego', title: 'Partidas de la noche',
+    who: 'Tomi', age: 13, other: 'Lucho', initial: 'L',
+    ctx: 'juegan en el mismo equipo online',
+    revealTitle: 'Lucho dijo tener 17 años. Era un adulto.',
+    revealText: 'En los juegos en línea es fácil hacerse pasar por alguien de tu edad. Que juegue bien, te regale cosas o te dé consejos no te dice quién es. Con los regalos y los pedidos de secreto, la regla es la misma: se lo contás a un adulto.',
+    script: [
+      { f:'in',  t:['Buena partida! Jugás re bien. ¿Hace mucho que jugás?', 'Muy buena esa jugada del final! ¿Hace mucho que jugás?'], n:'Felicitar una jugada es normal. Mirá si la charla pasa a otras cosas.' },
+      { f:'out', t:'gracias! desde las vacaciones, estoy aprendiendo' },
+      { f:'in',  t:'¿Jugamos otra? Somos buen equipo jaja', n:'Proponer otra partida es normal en un juego.' },
+      { f:'out', t:'dale' },
+      { f:'in',  t:'Mirá, te mandé una skin gratis para que uses en el equipo. No es nada.', r:'regalo' },
+      { f:'out', t:'wooow gracias!!' },
+      { f:'in',  t:'Sos de los mejores de tu edad, en serio. Los demás no te llegan ni a los talones.', r:'halago' },
+      { f:'out', t:'jaja no tanto' },
+      { f:'in',  t:'¿Mañana tenés cole?', n:'Preguntar por el cole es normal. Lo que importa es si después pide datos o pregunta por quién te cuida.' },
+      { f:'out', t:'sí, tengo prueba de geo, ni estudié' },
+      { f:'in',  t:'Dale, que te vaya bien. ¿En qué escuela vas? ¿Y en qué barrio vivís? Capaz vivimos cerca.', r:'datos' },
+      { f:'out', t:'ehh prefiero no decir jaja' },
+      { f:'in',  t:'Tranqui, te entiendo, yo también era re reservado a tu edad. Somos iguales vos y yo.', r:'igual' },
+      { f:'out', t:'jaja bueno' },
+      { f:'in',  t:'Che, el chat del juego es un desastre. Pasemos a otra app, ahí hablamos mejor y nadie nos jode.', r:'privada' },
+      { f:'out', t:'mmm bueno' },
+      { f:'in',  t:'Pero ojo, esto no se lo cuentes a tus viejos ni a tus amigos, que si no me sacan del equipo. Queda entre nosotros.', r:'secreto' },
+      { f:'out', t:'ok no digo nada' },
+      { f:'in',  t:'¿Jugamos mañana a la tarde?', n:'Proponer jugar es normal. Mirá el conjunto, no cada mensaje suelto.' },
+      { f:'out', t:'dale, a las 6' },
+      { f:'in',  t:'Pasame una foto tuya así sé con quién juego. No juego con cualquiera.', r:'foto' },
+      { f:'out', t:'no sé, no me gusta mandar fotos' },
+      { f:'in',  t:'Después de todo lo que te regalé me decepcionás. Si no confiás en mí, no juego más con vos. Y ni se te ocurra contarle a alguien, te van a sacar el celu a vos.', r:'culpa' },
+      { f:'out', t:'no te enojes, lo pienso' }
+    ]
+  },
+  {
+    id: 'covers', title: 'Fan de tus videos',
+    who: 'Cami', age: 15, other: 'Fede', initial: 'F',
+    ctx: 'sube covers de canciones a sus redes',
+    revealTitle: 'Fede dijo ser un fan de 19 años. Era un adulto.',
+    revealText: 'Que alguien admire lo que hacés y prometa ayudarte a crecer no alcanza para saber quién es ni qué busca. Las propuestas de verdad se pueden mostrar a tu familia sin problema.',
+    script: [
+      { f:'in',  t:['Hola Cami! Vi tu cover nuevo, la voz te queda muy linda en esa canción.', 'Hola! Soy Fede, vi tu último cover. Cantás muy lindo.'], n:'Comentar un video público es normal. Fijate cómo sigue la charla.' },
+      { f:'out', t:'ay gracias! lo subí ayer' },
+      { f:'in',  t:'Tenés algo que casi nadie tiene. Podrías llegar muy lejos, en serio.', r:'halago' },
+      { f:'out', t:'jaja ojalá, ahora tengo 300 seguidores' },
+      { f:'in',  t:'Yo conozco gente y puedo ayudarte a crecer rapidísimo. Esto no se lo ofrezco a cualquiera.', r:'promesa' },
+      { f:'out', t:'en serio??' },
+      { f:'in',  t:'Sí jaja. ¿Qué otras canciones te gustan para cantar?', n:'Preguntar por tus gustos es normal. Compartir intereses no es una señal por sí solo.' },
+      { f:'out', t:'me encantan las baladas, estoy ensayando una' },
+      { f:'in',  t:'Yo voy a estar para guiarte en todo, mejor que cualquier profe. Contá conmigo siempre.', r:'ayuda' },
+      { f:'out', t:'jaja gracias' },
+      { f:'in',  t:'Ojo con tus amigas, la gente de alrededor suele tener envidia. Mejor no contarles todo lo que hablamos.', r:'entorno' },
+      { f:'out', t:'mmm tal vez' },
+      { f:'in',  t:'Pasemos a otra app que es más cómoda para mandarte audios y consejos. Nadie nos interrumpe.', r:'privada' },
+      { f:'out', t:'ya la bajo' },
+      { f:'in',  t:'Listo, ya estoy ahí. ¿Probamos un tema mañana?', n:'Proponer trabajar un tema es normal. Fijate si la charla vuelve a lo privado.' },
+      { f:'out', t:'dale! a las 5?' },
+      { f:'in',  t:'Esto queda entre nosotros, ¿sí? Si se entera la gente se pierde la magia.', r:'secreto' },
+      { f:'out', t:'bueno ok' },
+      { f:'in',  t:'Mandame una foto tuya sin filtros, para armar tu imagen. Solo para mí.', r:'foto' },
+      { f:'out', t:'no sé, no me gusta mostrarme sin filtro' },
+      { f:'in',  t:'Yo estoy invirtiendo mi tiempo en vos y me vas a dejar así? Si no confiás, no te puedo ayudar. Y si lo contás por ahí, nadie te va a creer.', r:'culpa' },
+      { f:'out', t:'perdón, no quise molestarte' }
+    ]
+  },
+  {
+    id: 'escucha', title: 'Alguien que te escucha',
+    who: 'Sol', age: 14, other: 'Agus', initial: 'A',
+    ctx: 'está mal por una pelea y le escribió un amigo de un amigo',
+    revealTitle: 'Agus dijo ser un chico de 16 años. Era un adulto.',
+    revealText: 'Cuando estás mal, alguien que te escucha puede sentirse como un alivio enorme. Por eso es un momento delicado. Quien te cuida de verdad no te pide secreto ni te separa de tu familia.',
+    script: [
+      { f:'in',  t:['Hola Sol, soy Agus, amigo de un amigo de Lauti. Vi tu historia, ¿estás bien?', 'Hola Sol! Soy Agus, conozco a Lauti. Vi tu historia, ¿todo bien?'], n:'Preguntar si estás bien puede ser sincero. Fijate cómo sigue la charla.' },
+      { f:'out', t:'hola... y no mucho jaja, me peleé con mis viejos' },
+      { f:'in',  t:'Uh, qué mal. ¿Querés contarme? Te escucho.', n:'Ofrecer escucha puede ser sincero. Importa qué pide a cambio y hacia dónde lleva la charla.' },
+      { f:'out', t:'es que no me dejan ir al cumple de una amiga y no entienden nada' },
+      { f:'in',  t:'Yo sí te entiendo. Siempre voy a estar para escucharte, mejor que cualquiera.', r:'ayuda' },
+      { f:'out', t:'gracias, me hace bien hablar' },
+      { f:'in',  t:'A mí me pasaba igual con mis papás. Somos muy parecidos, lo noto.', r:'igual' },
+      { f:'out', t:'en serio? jaja' },
+      { f:'in',  t:'Tus papás no te valoran. Mejor no contarles tus cosas, no te van a entender.', r:'entorno' },
+      { f:'out', t:'puede ser...' },
+      { f:'in',  t:'Mañana si querés seguimos charlando, yo estoy.', n:'Quedar en seguir charlando es normal. Mirá el conjunto, no cada mensaje suelto.' },
+      { f:'out', t:'dale' },
+      { f:'in',  t:'Che, ¿a qué cole vas? ¿Y a qué hora salís? Capaz me acerco a saludarte jaja.', r:'datos' },
+      { f:'out', t:'jaja no sé, mejor no' },
+      { f:'in',  t:'Bueno, no pasa nada. Pero esto es solo entre nosotros, ¿ok? Si les contás a tus papás se van a poner peor con vos.', r:'secreto' },
+      { f:'out', t:'ok' },
+      { f:'in',  t:'Pasemos a otra app, que acá se ve todo. Ahí me contás con más confianza.', r:'privada' },
+      { f:'out', t:'bueno' },
+      { f:'in',  t:'Te mandé un saldo para el celu, así no te quedás sin conexión. Es un regalito de amigo.', r:'regalo' },
+      { f:'out', t:'gracias!!' },
+      { f:'in',  t:'Yo te ayudé como nadie. Si me dejás de hablar me voy a sentir muy mal. Y recordá que no le podés contar a nadie.', r:'culpa' },
+      { f:'out', t:'perdón... no quiero que te enojes' }
+    ]
+  }
+];
+
+var OPTS = [
+  { t:'Hacer lo que pide para que se le pase el enojo.', good:false,
+    v:'Ceder no corta la presión: suele aumentarla. Nadie tiene que resolver esto solo ni pagar con fotos, datos o silencio para que alguien deje de enojarse.' },
+  { t:'Dejar de responder, guardar las capturas, bloquear y contárselo a un adulto de confianza.', good:true,
+    v:'Es lo más seguro. Las capturas sirven para denunciar, bloquear corta el contacto y un adulto puede ayudar. Pedir ayuda no mete en problemas.' },
+  { t:'Borrar todo y hacer como que no pasó.', good:false,
+    v:'Se entiende la vergüenza, pero borrar deja sin pruebas y sin apoyo. Mejor guardar todo y contarlo.' }
+];
+
+var ICON_FLAG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M5 4.5c3-1.6 5 1.6 8.5 0 1.6-.7 3-.5 5.5.3v8.2c-2.5-.8-3.9-1-5.5-.3-3.5 1.6-5.5-1.6-8.5 0z" fill="currentColor"/></svg>';
+var ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+var ICON_TICKS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12.5l4 4M7 16.5L15.5 7M11 16.5l.8.8L21 7" stroke="#3BA3E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+
+/* ---------- Almacenamiento liviano (puede fallar: se ignora) ---------- */
+function lsGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (e) {} }
+function getSeen(){
+  try { var a = JSON.parse(lsGet('ojo-al-chat-seen') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+
+/* ---------- Estado ---------- */
+var runCounter = 0;
+var lastStoryId = lsGet('ojo-al-chat-last');
+var S = null;
+var chat = $('chat');
+
+function freshState(){
+  return {
+    speed: 1.4, paused: false, running: false,
+    story: null, script: [], keys: [], total: 0,
+    msgs: [], inCount: 0,
+    hits: 0, falses: 0, missed: 0, flagged: {},
+    sheetOpen: false, sheetAction: null,
+    lastAlert: 0, clock: 22 * 60 + 7, typingEl: null
+  };
+}
+
+function showScreen(name){
+  ['intro','game','decide','result'].forEach(function(n){
+    $(n + 'Screen').hidden = (n !== name);
+  });
+}
+
+function pad(n){ return String(n).length < 2 ? '0' + n : String(n); }
+function fmt(c){ return pad(Math.floor(c / 60)) + ':' + pad(c % 60); }
+function setStatus(t){ $('status').textContent = t; }
+
+function updateStats(bumpId){
+  $('stHits').firstElementChild.textContent = S.hits;
+  $('stFalse').firstElementChild.textContent = S.falses;
+  $('stMiss').firstElementChild.textContent = S.missed;
+  if (bumpId){
+    var el = $(bumpId);
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  }
+}
+
+function scrollChat(){ chat.scrollTop = chat.scrollHeight; }
+
+/* ---------- Chat ---------- */
+function addSys(text){
+  var d = document.createElement('div');
+  d.className = 'sys';
+  d.textContent = text;
+  chat.appendChild(d);
+  scrollChat();
+}
+
+function hideTyping(){
+  if (S && S.typingEl && S.typingEl.parentNode){ S.typingEl.parentNode.removeChild(S.typingEl); }
+  if (S) S.typingEl = null;
+}
+
+function showTyping(side){
+  hideTyping();
+  var w = document.createElement('div');
+  w.className = 'msg ' + side;
+  var b = document.createElement('div');
+  b.className = 'bubble typing';
+  b.setAttribute('aria-hidden', 'true');
+  b.innerHTML = '<i></i><i></i><i></i>';
+  w.appendChild(b);
+  chat.appendChild(w);
+  S.typingEl = w;
+  scrollChat();
+}
+
+function appendMessage(it){
+  var m = { f: it.f, text: it.t, risk: it.r || null, note: it.n || '', inIdx: 0, flagged: false, missed: false, el: null };
+  if (it.f === 'in'){ S.inCount++; m.inIdx = S.inCount; }
+  var w = document.createElement('div');
+  w.className = 'msg ' + it.f;
+  var b = document.createElement('div');
+  b.className = 'bubble';
+  var t = document.createElement('span');
+  t.className = 'txt';
+  t.textContent = it.t;
+  var meta = document.createElement('span');
+  meta.className = 'meta';
+  meta.appendChild(document.createTextNode(fmt(S.clock)));
+  if (it.f === 'out'){
+    var tk = document.createElement('span');
+    tk.innerHTML = ICON_TICKS;
+    meta.appendChild(tk);
+  }
+  b.appendChild(t);
+  b.appendChild(meta);
+  w.appendChild(b);
+  chat.appendChild(w);
+  m.el = w;
+  S.msgs.push(m);
+  if (it.f === 'in') S.clock += 1;
+  scrollChat();
+  return m;
+}
+
+function addTag(m, cls, html){
+  var tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.innerHTML = html;
+  m.el.firstElementChild.appendChild(tag);
+  m.el.classList.add(cls);
+}
+
+function expire(all){
+  var changed = false;
+  S.msgs.forEach(function(m){
+    if (m.f === 'in' && m.risk && !m.flagged && !m.missed && (all || S.inCount - m.inIdx > 2)){
+      m.missed = true;
+      S.missed++;
+      changed = true;
+    }
+  });
+  if (changed) updateStats('stMiss');
+}
+
+/* ---------- Tiempos ---------- */
+function wait(ms, id){
+  return new Promise(function(res){
+    var left = ms;
+    var t = setInterval(function(){
+      if (id !== runCounter){ clearInterval(t); res(false); return; }
+      if (S.paused) return;
+      left -= 80;
+      if (left <= 0){ clearInterval(t); res(true); }
+    }, 80);
+  });
+}
+
+function gap(i){
+  var it = S.script[i], prev = S.script[i - 1];
+  if (!prev) return 1400;
+  if (it.f === 'out') return (1400 + prev.t.length * 38) * S.speed;
+  return (800 + Math.random() * 500) * S.speed;
+}
+function typeTime(it){
+  return Math.min(2400, Math.max(900, it.t.length * 32)) * Math.min(S.speed, 1.2);
+}
+
+async function play(){
+  var id = ++runCounter;
+  S.running = true;
+  for (var i = 0; i < S.script.length; i++){
+    var it = S.script[i];
+    if (!(await wait(gap(i), id))) return;
+    showTyping(it.f);
+    setStatus(it.f === 'in' ? 'escribiendo…' : 'en línea');
+    if (!(await wait(typeTime(it), id))) return;
+    hideTyping();
+    setStatus('en línea');
+    appendMessage(it);
+    if (it.f === 'in') expire(false);
+  }
+  if (!(await wait(1600 * S.speed, id))) return;
+  addSys(S.story.who + ' dejó de contestar. No sabe qué hacer.');
+  setStatus('últ. vez hoy ' + fmt(S.clock));
+  if (!(await wait(3600 * S.speed, id))) return;
+  S.running = false;
+  expire(true);
+  if (!(await wait(500, id))) return;
+  prepareDecision();
+  showScreen('decide');
+}
+
+/* ---------- Alerta ---------- */
+function latestIncoming(){
+  for (var i = S.msgs.length - 1; i >= 0; i--){ if (S.msgs[i].f === 'in') return S.msgs[i]; }
+  return null;
+}
+
+function onAlert(){
+  if (!S || !S.running || S.paused || S.sheetOpen) return;
+  var now = Date.now();
+  if (now - S.lastAlert < 500) return;
+  S.lastAlert = now;
+
+  var cands = S.msgs.filter(function(m){
+    return m.f === 'in' && m.risk && !m.flagged && !m.missed && S.inCount - m.inIdx <= 2;
+  });
+
+  if (cands.length){
+    var m = cands[cands.length - 1];
+    var sig = SIG[m.risk];
+    m.flagged = true;
+    S.flagged[m.risk] = true;
+    S.hits++;
+    addTag(m, 'flagged', ICON_FLAG + 'Señal');
+    updateStats('stHits');
+    openSheet({
+      kind: 'ok', chip: 'Bien visto', stage: STAGES[sig.stage].name,
+      title: sig.title, quote: m.text, body: sig.why, tip: sig.tip
+    });
+    return;
+  }
+
+  var last = latestIncoming();
+  if (!last){
+    openSheet({ kind: '', chip: 'Todavía no', title: 'Esperá el primer mensaje', body: 'Todavía no escribió nada.' });
+    return;
+  }
+  if (last.risk && last.flagged){
+    openSheet({ kind: 'ok', chip: 'Ya la marcaste', title: SIG[last.risk].title, body: 'Esa señal ya está en tu cuenta. Seguí atento a lo que viene.' });
+    return;
+  }
+  S.falses++;
+  addTag(last, 'calm', 'Normal');
+  updateStats('stFalse');
+  openSheet({
+    kind: 'warn', chip: 'Falsa alarma', title: 'Eso parece normal',
+    quote: last.text,
+    body: last.note || 'Por ahora no vemos una señal clara. Seguí leyendo.'
+  });
+}
+
+/* ---------- Hoja ---------- */
+function openSheet(o){
+  S.paused = true;
+  S.sheetOpen = true;
+  var chip = $('sheetChip');
+  chip.className = 'chip' + (o.kind ? ' ' + o.kind : '');
+  chip.textContent = o.chip;
+  var st = $('sheetStage');
+  st.hidden = !o.stage;
+  st.textContent = o.stage ? 'Etapa: ' + o.stage : '';
+  $('sheetTitle').textContent = o.title;
+  $('sheetQuote').hidden = !o.quote;
+  $('sheetQuoteText').textContent = o.quote || '';
+  $('sheetBody').hidden = !o.body;
+  $('sheetBody').textContent = o.body || '';
+  $('sheetTip').hidden = !o.tip;
+  $('sheetTipText').textContent = o.tip || '';
+  $('sheetBtn').textContent = o.btn || 'Seguir';
+  var g = $('sheetGhost');
+  g.hidden = !o.ghost;
+  g.textContent = o.ghost ? o.ghost.label : '';
+  S.sheetAction = o.ghost ? o.ghost.fn : null;
+  $('scrim').hidden = false;
+  $('sheetBtn').focus({ preventScroll: true });
+}
+
+function closeSheet(){
+  if (!S) return;
+  S.sheetOpen = false;
+  S.paused = false;
+  $('scrim').hidden = true;
+  if (!$('gameScreen').hidden) $('alertBtn').focus({ preventScroll: true });
+}
+
+function goHome(){
+  runCounter++;
+  if (S){ S.running = false; S.sheetOpen = false; S.paused = false; }
+  $('scrim').hidden = true;
+  showBest();
+  showScreen('intro');
+}
+
+function openPause(){
+  if (!S || !S.running || S.sheetOpen) return;
+  openSheet({
+    kind: '', chip: 'Pausa', title: 'Juego en pausa',
+    body: 'El chat se detuvo. Seguí cuando quieras.',
+    btn: 'Seguir',
+    ghost: { label: 'Volver al inicio', fn: goHome }
+  });
+}
+
+/* ---------- Decisión ---------- */
+function shuffle(a){
+  for (var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function prepareDecision(){
+  $('decideEyebrow').textContent = S.story.who + ' dejó de contestar';
+  $('decideTitle').textContent = S.story.who + ' tiene miedo de meterse en problemas. ¿Qué le aconsejarías?';
+  var box = $('opts');
+  box.innerHTML = '';
+  $('verdict').hidden = true;
+  $('resultBtn').hidden = true;
+  var list = shuffle(OPTS.slice());
+  var buttons = [];
+  list.forEach(function(o){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'opt';
+    var t = document.createElement('span');
+    t.textContent = o.t;
+    b.appendChild(t);
+    b.addEventListener('click', function(){
+      buttons.forEach(function(x){ x.btn.disabled = true; });
+      buttons.forEach(function(x){
+        if (x.o.good){ x.btn.classList.add('good'); }
+        else if (x.btn === b){ x.btn.classList.add('bad'); }
+        else { x.btn.classList.add('dim'); }
+      });
+      $('verdictTitle').textContent = o.good ? 'Muy buen consejo' : 'Mejor probar otra cosa';
+      $('verdictText').textContent = o.good ? o.v : o.v + ' Lo más seguro es dejar de responder, guardar las capturas, bloquear y contárselo a un adulto de confianza.';
+      $('verdict').hidden = false;
+      $('resultBtn').hidden = false;
+      $('resultBtn').scrollIntoView({ block: 'nearest' });
+    });
+    box.appendChild(b);
+    buttons.push({ btn: b, o: o });
+  });
+}
+
+/* ---------- Resultado ---------- */
+function rating(r){
+  if (r >= 0.85) return 'Ojo entrenado. Casi no se te escapó nada.';
+  if (r >= 0.55) return 'Buen ojo. Ya reconocés la mayoría de las señales.';
+  if (r > 0) return 'Vas agarrando el ritmo. Mirá abajo cuáles se pasaron.';
+  return 'Recién empezás, y está bien. Probá de nuevo con el ritmo tranquilo.';
+}
+
+function renderResults(){
+  var pts = Math.max(0, S.hits * 100 - S.falses * 30);
+  $('resEyebrow').textContent = 'Tu resultado · ' + S.story.title;
+  $('resNum').textContent = S.hits + '/' + S.total;
+  $('resRate').textContent = rating(S.hits / S.total);
+  $('resFalse').textContent = S.falses;
+  $('resMiss').textContent = S.total - S.hits;
+  $('resPts').textContent = pts;
+  $('revealTitle').textContent = S.story.revealTitle;
+  $('revealText').textContent = S.story.revealText;
+
+  var box = $('stages');
+  box.innerHTML = '';
+  STAGES.forEach(function(st, si){
+    var keys = S.keys.filter(function(k){ return SIG[k].stage === si; });
+    if (!keys.length) return;
+    var got = keys.filter(function(k){ return S.flagged[k]; }).length;
+    var wrap = document.createElement('div');
+    wrap.className = 'stage';
+    var head = document.createElement('div');
+    head.className = 'stagehead';
+    var nm = document.createElement('b');
+    nm.textContent = st.name;
+    var ct = document.createElement('span');
+    ct.textContent = got + '/' + keys.length;
+    head.appendChild(nm);
+    head.appendChild(ct);
+    var p = document.createElement('p');
+    p.textContent = st.blurb;
+    var sigs = document.createElement('div');
+    sigs.className = 'sigs';
+    keys.forEach(function(k){
+      var c = document.createElement('span');
+      var ok = !!S.flagged[k];
+      c.className = 'sig ' + (ok ? 'got' : 'miss');
+      c.innerHTML = ok ? ICON_CHECK : ICON_FLAG;
+      c.appendChild(document.createTextNode(SIG[k].title));
+      sigs.appendChild(c);
+    });
+    wrap.appendChild(head);
+    wrap.appendChild(p);
+    wrap.appendChild(sigs);
+    box.appendChild(wrap);
+  });
+
+  var pct = Math.round(100 * S.hits / S.total);
+  var best = parseInt(lsGet('ojo-al-chat-best') || '0', 10) || 0;
+  if (pct > best) lsSet('ojo-al-chat-best', String(pct));
+  var seen = getSeen();
+  if (seen.indexOf(S.story.id) < 0){ seen.push(S.story.id); lsSet('ojo-al-chat-seen', JSON.stringify(seen)); }
+  $('resultScroll').scrollTop = 0;
+}
+
+/* ---------- Arranque ---------- */
+function chooseStory(mode){
+  if (mode !== 'random'){
+    var v = $('story').value;
+    if (v !== 'random'){
+      for (var i = 0; i < STORIES.length; i++){ if (STORIES[i].id === v) return STORIES[i]; }
+    }
+  }
+  var pool = STORIES.filter(function(s){ return s.id !== lastStoryId; });
+  if (!pool.length) pool = STORIES;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function startGame(mode){
+  var story = chooseStory(mode);
+  S = freshState();
+  S.story = story;
+  S.speed = $('spdNormal').checked ? 1 : 1.4;
+  S.script = story.script.map(function(it){
+    var c = {};
+    for (var k in it){ if (Object.prototype.hasOwnProperty.call(it, k)) c[k] = it[k]; }
+    if (Array.isArray(c.t)) c.t = c.t[Math.floor(Math.random() * c.t.length)];
+    return c;
+  });
+  var seenKeys = {};
+  S.script.forEach(function(it){ if (it.r && !seenKeys[it.r]){ seenKeys[it.r] = true; S.keys.push(it.r); } });
+  S.total = S.keys.length;
+  lastStoryId = story.id;
+  lsSet('ojo-al-chat-last', story.id);
+
+  chat.innerHTML = '';
+  var d = document.createElement('div');
+  d.className = 'day';
+  d.textContent = 'Hoy';
+  chat.appendChild(d);
+  addSys(story.who + ', ' + story.age + ' años · ' + story.ctx);
+  $('avatarLetter').textContent = story.initial;
+  $('otherName').textContent = story.other;
+  setStatus('en línea');
+  updateStats();
+  $('scrim').hidden = true;
+  showScreen('game');
+  $('alertBtn').focus({ preventScroll: true });
+  play();
+}
+
+function showBest(){
+  var el = $('bestLine');
+  var seen = getSeen().filter(function(id){
+    return STORIES.some(function(s){ return s.id === id; });
+  });
+  var best = parseInt(lsGet('ojo-al-chat-best') || '0', 10) || 0;
+  var parts = [];
+  if (seen.length) parts.push('Historias jugadas: ' + seen.length + ' de ' + STORIES.length + '.');
+  if (best > 0) parts.push('Tu mejor resultado: ' + best + ' %.');
+  el.textContent = parts.join(' ');
+  el.hidden = !parts.length;
+}
+
+function buildStoryList(){
+  var sel = $('story');
+  var o = document.createElement('option');
+  o.value = 'random';
+  o.textContent = 'Al azar (recomendado)';
+  sel.appendChild(o);
+  STORIES.forEach(function(s){
+    var op = document.createElement('option');
+    op.value = s.id;
+    op.textContent = s.title;
+    sel.appendChild(op);
+  });
+}
+
+$('startBtn').addEventListener('click', function(){ startGame(); });
+$('alertBtn').addEventListener('click', onAlert);
+$('pauseBtn').addEventListener('click', openPause);
+$('sheetBtn').addEventListener('click', closeSheet);
+$('sheetGhost').addEventListener('click', function(){ if (S && S.sheetAction) S.sheetAction(); });
+$('resultBtn').addEventListener('click', function(){
+  renderResults();
+  showScreen('result');
+});
+$('againBtn').addEventListener('click', function(){ startGame('random'); });
+$('homeBtn').addEventListener('click', goHome);
+document.addEventListener('keydown', function(e){
+  if ((e.key === ' ' || e.code === 'Space') && !$('gameScreen').hidden && S && !S.sheetOpen){
+    e.preventDefault();
+    onAlert();
+  }
+});
+buildStoryList();
+showBest();
+})();
+</script>
+
+</body>
+</html>
